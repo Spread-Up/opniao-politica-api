@@ -1,7 +1,47 @@
 const express = require('express');
 const router = express.Router();
 
-async function ValidateCpf(cpf) {
+function ValidarCpf(cpf) {
+
+    var Soma;
+    var Resto;
+    var strCPF;
+	var strTemp;
+    var i;
+    Soma = 0;   
+
+    strTemp = cpf.replace(".", "");
+    strTemp = strTemp.replace(".", "");
+    strTemp = strTemp.replace(".", "");
+    strTemp = strTemp.replace("-", "");
+    strTemp = strTemp.replace("-", "");
+    strCPF = strTemp;
+    if (cpf === '') {
+        return false
+    } else {
+        if (strCPF == "00000000000")
+        return false;
+        for (i=1; i<=9; i++)
+        Soma = Soma + parseInt(strCPF.substring(i-1, i)) * (11 - i); 
+        Resto = (Soma * 10) % 11;
+        if ((Resto == 10) || (Resto == 11)) 
+        Resto = 0;
+        if (Resto != parseInt(strCPF.substring(9, 10)) )
+        return false;
+        Soma = 0;
+        for (i = 1; i <= 10; i++)
+           Soma = Soma + parseInt(strCPF.substring(i-1, i)) * (12 - i);
+        Resto = (Soma * 10) % 11;
+        if ((Resto == 10) || (Resto == 11)) 
+        Resto = 0;
+        if (Resto != parseInt(strCPF.substring(10, 11) ) )
+            return false;
+        return true;
+    }
+
+}
+
+async function SituacaoCpf(cpf) {
 
     const chromium = require("chrome-aws-lambda");
     const puppeteer = require("puppeteer-core");
@@ -38,8 +78,17 @@ router.get('/', async function(req, res){
 });
 
 router.get('/cpf/:cpf', async function(req, res){
-    const situacao = await ValidateCpf(req.params.cpf)
+
+    let situacao
+    const cpf = req.params.cpf
+    const cpfValido = ValidarCpf(cpf)
+    if (cpfValido) {
+        situacao = await SituacaoCpf(req.params.cpf)
+    } else {
+        situacao = 'CPF Inválido'
+    }
     res.json(situacao);
+
 });
 
 module.exports = router;
