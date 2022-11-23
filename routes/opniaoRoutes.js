@@ -81,13 +81,19 @@ router.get('/cpf/:cpf', async function(req, res){
 
     let situacao
     const cpf = req.params.cpf
-    const cpfValido = ValidarCpf(cpf)
+    const cpfValido = await ValidarCpf(cpf)
     if (cpfValido) {
         situacao = await SituacaoCpf(req.params.cpf)
     } else {
         situacao = 'CPF Inválido'
     }
-    res.json(situacao);
+    res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+    });
+    res.json({
+        test: situacao
+    });
 
 });
 
